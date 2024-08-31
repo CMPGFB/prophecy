@@ -26,7 +26,7 @@ function App() {
     <Connect authOptions={{
       appDetails: {
         name: 'Prophecy DApp',
-        icon: '/logo192.png',
+        icon: '/logo.png',
       },
       redirectTo: '/',
       onFinish: () => {
