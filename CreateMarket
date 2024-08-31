@@ -1,0 +1,57 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useConnect } from '@stacks/connect-react';
+import { createMarket } from '../utils/supabaseClient';
+import { createMarketOnChain } from '../utils/contractUtils';
+
+function CreateMarket({ userData }) {
+  const [question, setQuestion] = useState('');
+  const navigate = useNavigate();
+  const { doContractCall } = useConnect();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!userData) {
+      alert('Please connect your wallet first.');
+      return;
+    }
+    try {
+      // First, create the market on the blockchain
+      const txData = await createMarketOnChain(doContractCall, question);
+      
+      // Then, store the market data in Supabase
+      await createMarket(question, userData.profile.stxAddress, txData.txId);
+      
+      alert('Market created successfully!');
+      setQuestion('');
+      navigate('/markets');
+    } catch (error) {
+      console.error('Error creating market:', error);
+      alert('Failed to create market. Please try again.');
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h2 className="text-2xl font-bold mb-4">Create a New Market</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="question" className="block mb-2">Question:</label>
+          <input
+            type="text"
+            id="question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded text-black"
+            required
+          />
+        </div>
+        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+          Create Market
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default CreateMarket;
